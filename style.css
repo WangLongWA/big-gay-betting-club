@@ -1,0 +1,301 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #17202a;
+
+    background:
+        radial-gradient(circle at 10% 10%, rgba(25, 169, 116, 0.18), transparent 30%),
+        radial-gradient(circle at 90% 20%, rgba(30, 100, 180, 0.20), transparent 35%),
+        linear-gradient(135deg, #dce9f2 0%, #edf3f6 45%, #d9eee7 100%);
+
+    min-height: 100vh;
+}
+
+
+/* ------------------------------------
+   HEADER
+------------------------------------ */
+
+h1 {
+    margin: 0;
+    padding: 25px 20px 5px;
+
+    background:
+        linear-gradient(120deg, #061b2a, #0b3045, #064d42);
+
+    color: white;
+    font-size: 32px;
+    letter-spacing: 0.5px;
+}
+
+body > p {
+    margin: 0;
+    padding: 5px 20px 25px;
+
+    background: linear-gradient(120deg, #061b2a, #064d42);
+
+    color: #c9f3e3;
+    font-size: 15px;
+}
+
+
+/* ------------------------------------
+   HEADINGS
+------------------------------------ */
+
+h2 {
+    max-width: 1100px;
+    margin: 30px auto 12px;
+    padding: 0 20px;
+
+    color: #071d2b;
+    font-size: 21px;
+}
+
+
+/* ------------------------------------
+   TABLES
+------------------------------------ */
+
+table {
+    width: calc(100% - 40px);
+    max-width: 1060px;
+
+    margin: 0 auto;
+
+    border-collapse: collapse;
+
+    background: rgba(255, 255, 255, 0.96);
+
+    border-radius: 8px;
+    overflow: hidden;
+
+    box-shadow:
+        0 4px 15px rgba(0, 40, 60, 0.12);
+}
+
+th {
+    padding: 14px;
+
+    background: linear-gradient(
+        90deg,
+        #092536,
+        #12455a
+    );
+
+    color: white;
+
+    text-align: left;
+    font-size: 14px;
+}
+
+td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #dfe7eb;
+}
+
+tr:nth-child(even) td {
+    background: #f4faf8;
+}
+
+tr:hover td {
+    background: #dff6ec;
+}
+
+
+/* ------------------------------------
+   CURRENT ROUND
+------------------------------------ */
+
+.rotation-card {
+    width: calc(100% - 40px);
+    max-width: 1060px;
+
+    margin: 0 auto;
+
+    padding: 20px;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    border-radius: 8px;
+
+    border-left: 6px solid #18b77b;
+
+    box-shadow:
+        0 4px 15px rgba(0, 40, 60, 0.12);
+}
+
+.rotation-card p {
+    margin: 9px 0;
+}
+
+
+/* ------------------------------------
+   TOTAL KITTY
+------------------------------------ */
+
+.rotation-card p:first-child {
+    margin: -20px -20px 20px;
+
+    padding: 20px;
+
+    background:
+        linear-gradient(
+            120deg,
+            #061b2a 0%,
+            #0b3548 55%,
+            #08704f 100%
+        );
+
+    color: white;
+
+    border-radius: 6px 6px 0 0;
+}
+
+.rotation-card p:first-child strong {
+    color: #b9d0d9;
+}
+
+#total-kitty {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #25e49a;
+
+    font-size: 38px;
+    font-weight: 800;
+}
+
+
+/* ------------------------------------
+   CURRENT PUNTER
+------------------------------------ */
+
+#this-week {
+    display: inline-block;
+
+    padding: 5px 12px;
+
+    background: #18b77b;
+    color: white;
+
+    border-radius: 20px;
+
+    font-weight: bold;
+}
+
+
+/* ------------------------------------
+   NEXT PUNTER
+------------------------------------ */
+
+#next-week {
+    font-weight: bold;
+    color: #08704f;
+}
+
+
+/* ------------------------------------
+   THIS WEEK'S BET
+------------------------------------ */
+
+.bet-card {
+    width: calc(100% - 40px);
+    max-width: 1060px;
+
+    margin: 0 auto;
+
+    padding: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #eefaf5
+        );
+
+    border-radius: 8px;
+
+    border-left: 6px solid #18b77b;
+
+    box-shadow:
+        0 4px 15px rgba(0, 40, 60, 0.12);
+}
+
+.bet-card p {
+    margin: 9px 0;
+}
+
+
+/* ------------------------------------
+   INPUTS
+------------------------------------ */
+
+input {
+    width: 100%;
+    min-width: 80px;
+
+    padding: 9px;
+
+    border: 1px solid #b9cbd3;
+    border-radius: 5px;
+
+    background: white;
+
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+
+    border: 2px solid #18b77b;
+
+    box-shadow:
+        0 0 0 3px rgba(24, 183, 123, 0.15);
+}
+
+
+/* ------------------------------------
+   MOBILE
+------------------------------------ */
+
+@media (max-width: 700px) {
+
+    h1 {
+        font-size: 25px;
+        padding: 20px 12px 5px;
+    }
+
+    body > p {
+        padding: 5px 12px 20px;
+    }
+
+    h2 {
+        padding: 0 12px;
+        font-size: 19px;
+    }
+
+    table {
+        width: calc(100% - 24px);
+        font-size: 13px;
+    }
+
+    th,
+    td {
+        padding: 10px 7px;
+    }
+
+    .rotation-card,
+    .bet-card {
+        width: calc(100% - 24px);
+    }
+
+    #total-kitty {
+        font-size: 32px;
+    }
+}
