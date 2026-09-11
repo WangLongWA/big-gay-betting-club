@@ -299,3 +299,18 @@ input:focus {
         font-size: 32px;
     }
 }
+.club-photo {
+    width: 100%;
+    max-width: 900px;
+    margin: 20px auto 30px;
+    text-align: center;
+}
+
+.club-photo img {
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+}
