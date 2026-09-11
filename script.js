@@ -22,6 +22,16 @@ let players = [
 
 
 // ------------------------------------
+// ROUND SETTINGS
+// ------------------------------------
+
+const WEEKS_PER_ROUND = 6;
+const STAKE = 20;
+
+let startFriday = new Date(2026, 8, 4);
+
+
+// ------------------------------------
 // CURRENT BETTING WEEK
 // ------------------------------------
 
@@ -39,23 +49,27 @@ bettingFriday.setDate(
 
 
 // ------------------------------------
-// ROUND START
+// WORK OUT ROUND AND WEEK
 // ------------------------------------
 
-let startFriday = new Date(2026, 8, 4);
+let totalWeeksSinceStart = Math.floor(
+    (bettingFriday - startFriday) /
+    (7 * 24 * 60 * 60 * 1000)
+);
+
+let currentRound =
+    Math.floor(totalWeeksSinceStart / WEEKS_PER_ROUND) + 1;
+
+let currentWeek =
+    (totalWeeksSinceStart % WEEKS_PER_ROUND) + 1;
 
 
 // ------------------------------------
 // WORK OUT CURRENT PUNTER
 // ------------------------------------
 
-let weeksSinceStart = Math.floor(
-    (bettingFriday - startFriday) /
-    (7 * 24 * 60 * 60 * 1000)
-);
-
 let currentPlayer =
-    weeksSinceStart % players.length;
+    (totalWeeksSinceStart % players.length);
 
 let nextPlayer =
     (currentPlayer + 1) % players.length;
@@ -83,19 +97,48 @@ document.getElementById("next-week").textContent =
 
 
 // ------------------------------------
+// DISPLAY ROUND INFORMATION
+// ------------------------------------
+
+let roundElements =
+    document.querySelectorAll(".rotation-card p");
+
+
+// Round: 1 of 6 weeks
+if (roundElements[1]) {
+    roundElements[1].innerHTML =
+        `<strong>Round:</strong> ${currentRound} of 6 weeks`;
+}
+
+
+// Weeks completed
+if (document.getElementById("weeks-completed")) {
+
+    document.getElementById("weeks-completed").textContent =
+        currentWeek - 1;
+}
+
+
+// ------------------------------------
 // ROUND SCHEDULE
 // ------------------------------------
 
 let schedule =
     document.getElementById("round-schedule");
 
-for (let i = 0; i < players.length; i++) {
+schedule.innerHTML = "";
 
-    let weekDate = new Date(startFriday);
+
+for (let i = 0; i < WEEKS_PER_ROUND; i++) {
+
+    let weekDate =
+        new Date(startFriday);
 
     weekDate.setDate(
-        startFriday.getDate() + (i * 7)
+        startFriday.getDate() +
+        (totalWeeksSinceStart - (currentWeek - 1) + i) * 7
     );
+
 
     let scheduleDate =
         weekDate.toLocaleDateString("en-AU", {
@@ -104,14 +147,27 @@ for (let i = 0; i < players.length; i++) {
             year: "numeric"
         });
 
+
+    let punter =
+        players[
+            (
+                totalWeeksSinceStart -
+                (currentWeek - 1) +
+                i
+            ) % players.length
+        ];
+
+
     let row =
         document.createElement("tr");
+
 
     row.innerHTML = `
         <td>${i + 1}</td>
         <td>${scheduleDate}</td>
-        <td>${players[i]}</td>
+        <td>${punter}</td>
     `;
+
 
     schedule.appendChild(row);
 }
@@ -124,14 +180,26 @@ for (let i = 0; i < players.length; i++) {
 let resultsTable =
     document.getElementById("betting-results");
 
-for (let i = 0; i < players.length; i++) {
+resultsTable.innerHTML = "";
+
+
+for (let i = 0; i < WEEKS_PER_ROUND; i++) {
+
+    let weekNumber = i + 1;
+
 
     let weekDate =
         new Date(startFriday);
 
     weekDate.setDate(
-        startFriday.getDate() + (i * 7)
+        startFriday.getDate() +
+        (
+            totalWeeksSinceStart -
+            (currentWeek - 1) +
+            i
+        ) * 7
     );
+
 
     let resultDate =
         weekDate.toLocaleDateString("en-AU", {
@@ -140,22 +208,34 @@ for (let i = 0; i < players.length; i++) {
             year: "numeric"
         });
 
+
+    let punter =
+        players[
+            (
+                totalWeeksSinceStart -
+                (currentWeek - 1) +
+                i
+            ) % players.length
+        ];
+
+
     let row =
         document.createElement("tr");
+
 
     row.innerHTML = `
         <td>${resultDate}</td>
 
-        <td>${players[i]}</td>
+        <td>${punter}</td>
 
-        <td>$20</td>
+        <td>$${STAKE}</td>
 
         <td>
             <input
                 type="text"
                 class="result"
                 placeholder="Result"
-                data-index="${i}"
+                data-week="${weekNumber}"
             >
         </td>
 
@@ -164,20 +244,21 @@ for (let i = 0; i < players.length; i++) {
                 type="number"
                 class="winnings"
                 placeholder="0"
-                data-index="${i}"
+                data-week="${weekNumber}"
             >
         </td>
     `;
+
 
     resultsTable.appendChild(row);
 }
 
 
 // ------------------------------------
-// LOAD RESULTS FROM SUPABASE
+// LOAD CURRENT ROUND FROM SUPABASE
 // ------------------------------------
 
-async function loadBettingResults() {
+async function loadCurrentRound() {
 
     const {
         data,
@@ -185,34 +266,38 @@ async function loadBettingResults() {
     } = await supabaseClient
         .from("betting_results")
         .select("*")
-        .eq("round", 1)
-        .order("week");
+        .eq("round", currentRound)
+        .order("week", {
+            ascending: true
+        });
+
 
     if (error) {
 
         console.error(
-            "Error loading betting results:",
+            "Error loading current round:",
             error
         );
 
         return;
     }
 
+
     console.log(
-        "Betting results loaded:",
+        "Current round loaded:",
         data
     );
 
 
-    // Put database values into the table
-
-    data.forEach(function(result) {
+    data.forEach(function(bet) {
 
         let index =
-            result.week - 1;
+            Number(bet.week) - 1;
+
 
         let resultInput =
             document.querySelectorAll(".result")[index];
+
 
         let winningsInput =
             document.querySelectorAll(".winnings")[index];
@@ -221,50 +306,78 @@ async function loadBettingResults() {
         if (resultInput) {
 
             resultInput.value =
-                result.result || "";
+                bet.result || "";
+
         }
 
 
         if (winningsInput) {
 
             winningsInput.value =
-                result.winnings ?? "";
+                bet.winnings ?? "";
+
         }
 
     });
 
 
-    updateTotalKitty();
+   function updateTotalKitty() {
+
+    const STARTING_KITTY = 180;
+    const UNBET_AMOUNT = 10;
+
+    let totalKitty = STARTING_KITTY;
+    let totalWinnings = 0;
+    let completedBets = 0;
+
+    document.querySelectorAll(".winnings").forEach(function(input) {
+
+        if (input.value !== "") {
+
+            let winnings = Number(input.value) || 0;
+
+            // $10 of each $30 contribution remains in the kitty
+            totalKitty += UNBET_AMOUNT;
+
+            // Winnings are the total payout, including the $20 stake
+            totalKitty += winnings;
+
+            totalWinnings += winnings;
+
+            completedBets++;
+        }
+    });
+
+    document.getElementById("total-kitty").textContent =
+        "$" + totalKitty.toFixed(0);
+
+    document.getElementById("total-winnings").textContent =
+        totalWinnings.toFixed(0);
+
+    document.getElementById("weeks-completed").textContent =
+        completedBets;
+}
+
+    updateStandings();
 }
 
 
 // ------------------------------------
-// SAVE A BETTING RESULT
+// SAVE BET
 // ------------------------------------
 
-async function saveBettingResult(index) {
+async function saveBet(index) {
 
     let resultInput =
         document.querySelectorAll(".result")[index];
+
 
     let winningsInput =
         document.querySelectorAll(".winnings")[index];
 
 
-    let weekDate =
-        new Date(startFriday);
-
-    weekDate.setDate(
-        startFriday.getDate() + (index * 7)
-    );
-
-
-    let friday =
-        weekDate.toISOString().split("T")[0];
-
-
     let result =
-        resultInput.value;
+        resultInput.value.trim();
 
 
     let winnings =
@@ -273,7 +386,37 @@ async function saveBettingResult(index) {
             : Number(winningsInput.value);
 
 
-    // Check whether this week already exists
+    let week =
+        index + 1;
+
+
+    let actualWeekNumber =
+        totalWeeksSinceStart -
+        (currentWeek - 1) +
+        index;
+
+
+    let weekDate =
+        new Date(startFriday);
+
+
+    weekDate.setDate(
+        startFriday.getDate() +
+        actualWeekNumber * 7
+    );
+
+
+    let friday =
+        weekDate.toISOString().split("T")[0];
+
+
+    let punter =
+        players[
+            actualWeekNumber % players.length
+        ];
+
+
+    // Check whether this round/week already exists
 
     const {
         data: existing,
@@ -281,15 +424,15 @@ async function saveBettingResult(index) {
     } = await supabaseClient
         .from("betting_results")
         .select("id")
-        .eq("round", 1)
-        .eq("week", index + 1)
+        .eq("round", currentRound)
+        .eq("week", week)
         .maybeSingle();
 
 
     if (findError) {
 
         console.error(
-            "Error checking result:",
+            "Error checking bet:",
             findError
         );
 
@@ -298,7 +441,7 @@ async function saveBettingResult(index) {
 
 
     // --------------------------------
-    // UPDATE EXISTING RESULT
+    // UPDATE EXISTING BET
     // --------------------------------
 
     if (existing) {
@@ -309,7 +452,7 @@ async function saveBettingResult(index) {
             .from("betting_results")
             .update({
                 friday: friday,
-                punter: players[index],
+                punter: punter,
                 result: result,
                 winnings: winnings
             })
@@ -319,14 +462,17 @@ async function saveBettingResult(index) {
         if (error) {
 
             console.error(
-                "Error updating result:",
+                "Error updating bet:",
                 error
             );
 
         } else {
 
             console.log(
-                "Betting result updated."
+                "Bet updated:",
+                punter,
+                result,
+                winnings
             );
 
         }
@@ -335,7 +481,7 @@ async function saveBettingResult(index) {
 
 
     // --------------------------------
-    // CREATE NEW RESULT
+    // CREATE NEW BET
     // --------------------------------
 
     else {
@@ -345,10 +491,10 @@ async function saveBettingResult(index) {
         } = await supabaseClient
             .from("betting_results")
             .insert({
-                round: 1,
-                week: index + 1,
+                round: currentRound,
+                week: week,
                 friday: friday,
-                punter: players[index],
+                punter: punter,
                 result: result,
                 winnings: winnings
             });
@@ -357,14 +503,17 @@ async function saveBettingResult(index) {
         if (error) {
 
             console.error(
-                "Error saving result:",
+                "Error saving bet:",
                 error
             );
 
         } else {
 
             console.log(
-                "Betting result saved."
+                "Bet saved:",
+                punter,
+                result,
+                winnings
             );
 
         }
@@ -372,7 +521,49 @@ async function saveBettingResult(index) {
     }
 
 
-    updateTotalKitty();
+    async function updateTotalKitty() {
+
+    const STARTING_KITTY = 180;
+    const UNBET_AMOUNT = 10;
+
+    const { data, error } = await supabaseClient
+        .from("betting_results")
+        .select("winnings");
+
+    if (error) {
+        console.error("Error loading kitty:", error);
+        return;
+    }
+
+    let totalKitty = STARTING_KITTY;
+    let totalWinnings = 0;
+    let completedBets = 0;
+
+    data.forEach(function(bet) {
+
+        // Every completed bet leaves $10 in the kitty
+        totalKitty += UNBET_AMOUNT;
+
+        // Winnings are the total payout, including the $20 stake
+        let winnings = Number(bet.winnings) || 0;
+
+        totalKitty += winnings;
+        totalWinnings += winnings;
+
+        completedBets++;
+    });
+
+    document.getElementById("total-kitty").textContent =
+        "$" + totalKitty.toFixed(0);
+
+    document.getElementById("total-winnings").textContent =
+        totalWinnings.toFixed(0);
+
+    document.getElementById("weeks-completed").textContent =
+        completedBets;
+}
+
+    updateStandings();
 }
 
 
@@ -388,7 +579,7 @@ document
             "change",
             function() {
 
-                saveBettingResult(index);
+                saveBet(index);
 
             }
         );
@@ -408,7 +599,7 @@ document
             "change",
             function() {
 
-                saveBettingResult(index);
+                saveBet(index);
 
             }
         );
@@ -426,34 +617,38 @@ function updateTotalKitty() {
 
     let totalWinnings = 0;
 
-    let weeksCompleted = 0;
+    let completedBets = 0;
 
 
-    let winningsInputs =
-        document.querySelectorAll(".winnings");
+    document
+        .querySelectorAll(".winnings")
+        .forEach(function(input) {
+
+            if (input.value !== "") {
+
+                let winnings =
+                    Number(input.value);
 
 
-    winningsInputs.forEach(function(input) {
+                totalWinnings += winnings;
 
-        if (input.value !== "") {
 
-            let winnings =
-                Number(input.value);
+                totalKitty =
+                    totalKitty -
+                    STAKE +
+                    winnings;
 
-            totalWinnings += winnings;
 
-            totalKitty =
-                totalKitty - 20 + winnings;
+                completedBets++;
 
-            weeksCompleted++;
+            }
 
-        }
-
-    });
+        });
 
 
     let kittyDisplay =
         document.getElementById("total-kitty");
+
 
     if (kittyDisplay) {
 
@@ -466,6 +661,7 @@ function updateTotalKitty() {
     let winningsDisplay =
         document.getElementById("total-winnings");
 
+
     if (winningsDisplay) {
 
         winningsDisplay.textContent =
@@ -477,10 +673,11 @@ function updateTotalKitty() {
     let weeksDisplay =
         document.getElementById("weeks-completed");
 
+
     if (weeksDisplay) {
 
         weeksDisplay.textContent =
-            weeksCompleted;
+            completedBets;
 
     }
 
@@ -488,7 +685,347 @@ function updateTotalKitty() {
 
 
 // ------------------------------------
-// LOAD DATABASE WHEN PAGE OPENS
+// PLAYER STANDINGS
 // ------------------------------------
 
-loadBettingResults();
+async function updateStandings() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("betting_results")
+        .select("*")
+        .order("round", {
+            ascending: true
+        })
+        .order("week", {
+            ascending: true
+        });
+
+
+    if (error) {
+
+        console.error(
+            "Error loading standings:",
+            error
+        );
+
+        return;
+    }
+
+
+    let standings = {};
+
+
+    players.forEach(function(player) {
+
+        standings[player] = {
+
+            wins: 0,
+
+            totalWinnings: 0,
+
+            currentStreak: 0,
+
+            bestStreak: 0,
+
+            results: []
+
+        };
+
+    });
+
+
+    // --------------------------------
+    // COLLECT RESULTS
+    // --------------------------------
+
+    data.forEach(function(bet) {
+
+        if (!standings[bet.punter]) {
+            return;
+        }
+
+
+        let player =
+            standings[bet.punter];
+
+
+        let winnings =
+            Number(bet.winnings) || 0;
+
+
+        player.totalWinnings +=
+            winnings;
+
+
+        player.results.push({
+            round: Number(bet.round),
+            week: Number(bet.week),
+            result: (
+                bet.result || ""
+            ).trim().toLowerCase()
+        });
+
+    });
+
+
+    // --------------------------------
+    // CALCULATE STREAKS
+    // --------------------------------
+
+    players.forEach(function(player) {
+
+        let stats =
+            standings[player];
+
+
+        stats.results.sort(function(a, b) {
+
+            if (a.round !== b.round) {
+                return a.round - b.round;
+            }
+
+            return a.week - b.week;
+
+        });
+
+
+        let currentStreak = 0;
+
+        let bestStreak = 0;
+
+
+        stats.results.forEach(function(bet) {
+
+            if (bet.result === "win") {
+
+                stats.wins++;
+
+                currentStreak++;
+
+
+                if (currentStreak > bestStreak) {
+
+                    bestStreak =
+                        currentStreak;
+
+                }
+
+            } else {
+
+                currentStreak = 0;
+
+            }
+
+        });
+
+
+        stats.currentStreak =
+            currentStreak;
+
+        stats.bestStreak =
+            bestStreak;
+
+    });
+
+
+    // --------------------------------
+    // DISPLAY STANDINGS
+    // --------------------------------
+
+    let table =
+        document.getElementById(
+            "standings-table"
+        );
+
+
+    if (!table) {
+        return;
+    }
+
+
+    table.innerHTML = "";
+
+
+    // Sort by wins first,
+    // then winnings
+
+    let sortedPlayers =
+        [...players].sort(function(a, b) {
+
+            if (
+                standings[b].wins !==
+                standings[a].wins
+            ) {
+
+                return (
+                    standings[b].wins -
+                    standings[a].wins
+                );
+
+            }
+
+
+            return (
+                standings[b].totalWinnings -
+                standings[a].totalWinnings
+            );
+
+        });
+
+
+    sortedPlayers.forEach(function(player) {
+
+        let stats =
+            standings[player];
+
+
+        let currentStreak =
+    stats.currentStreak > 0
+        ? "HOT " + stats.currentStreak
+        : "-";
+
+
+        let bestStreak =
+            stats.bestStreak > 0
+                ? stats.bestStreak
+                : "-";
+
+
+        let row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+            <td><strong>${player}</strong></td>
+
+            <td>${stats.wins}</td>
+
+            <td>$${stats.totalWinnings}</td>
+
+            <td>${currentStreak}</td>
+
+            <td>${bestStreak}</td>
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+// ------------------------------------
+// START APP
+// ------------------------------------
+
+loadCurrentRound();
+// ------------------------------------
+// ROUND HISTORY
+// ------------------------------------
+
+async function loadRoundHistory() {
+
+    const { data, error } = await supabaseClient
+        .from("betting_results")
+        .select("*")
+        .order("round", { ascending: false })
+        .order("week", { ascending: true });
+
+    if (error) {
+        console.error("Error loading round history:", error);
+        return;
+    }
+
+    let history = {};
+
+    data.forEach(function(bet) {
+
+        let round = Number(bet.round);
+
+        if (!history[round]) {
+            history[round] = [];
+        }
+
+        history[round].push(bet);
+    });
+
+    let historyContainer =
+        document.getElementById("round-history");
+
+    historyContainer.innerHTML = "";
+
+    Object.keys(history).forEach(function(round) {
+
+        let bets = history[round];
+
+        let completed =
+            bets.length === WEEKS_PER_ROUND;
+
+        let totalWinnings = bets.reduce(function(total, bet) {
+            return total + (Number(bet.winnings) || 0);
+        }, 0);
+
+        let wins = bets.filter(function(bet) {
+            return (
+                bet.result &&
+                bet.result.toLowerCase() === "win"
+            );
+        }).length;
+
+        let section = document.createElement("div");
+
+        section.className = "history-round";
+
+        section.innerHTML = `
+    <h3>
+        Round ${round} ${completed ? "Completed" : "In Progress"}
+    </h3>
+
+            <p>
+                <strong>Wins:</strong> ${wins}
+                &nbsp;&nbsp;
+                <strong>Total Winnings:</strong> $${totalWinnings}
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Punter</th>
+                        <th>Result</th>
+                        <th>Winnings</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${bets.map(function(bet) {
+
+                        return `
+                            <tr>
+                                <td>${bet.week}</td>
+                                <td>${bet.punter}</td>
+                                <td>${bet.result || "-"}</td>
+                                <td>$${Number(bet.winnings) || 0}</td>
+                            </tr>
+                        `;
+
+                    }).join("")}
+                </tbody>
+            </table>
+        `;
+
+        historyContainer.appendChild(section);
+
+    });
+}
+
+
+// ------------------------------------
+// LOAD ROUND HISTORY
+// ------------------------------------
+
+loadRoundHistory();

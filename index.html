@@ -12,50 +12,25 @@
 
 <p>Six Gay Lords. One betting club.</p>
 
+<div class="club-photo">
+    <img src="betting-club-photo.png" alt="Big Gay Betting Club">
+</div>
+
 <h2>Current Standings</h2>
 
 <table>
-    <tr>
-        <th>Player</th>
-        <th>Wins</th>
-        <th>Total</th>
-    </tr>
+    <thead>
+        <tr>
+            <th>Punter</th>
+            <th>Wins</th>
+            <th>Total Winnings</th>
+            <th>Current Streak</th>
+            <th>Best Streak</th>
+        </tr>
+    </thead>
 
-    <tr>
-        <td>Adam</td>
-        <td>0</td>
-        <td>$0</td>
-    </tr>
-
-    <tr>
-        <td>Ben</td>
-        <td>0</td>
-        <td>$0</td>
-    </tr>
-
-    <tr>
-        <td>Hayden</td>
-        <td>0</td>
-        <td>$0</td>
-    </tr>
-
-    <tr>
-        <td>Kristov</td>
-        <td>0</td>
-        <td>$0</td>
-    </tr>
-
-    <tr>
-        <td>Lenko</td>
-        <td>0</td>
-        <td>$0</td>
-    </tr>
-
-    <tr>
-        <td>Ray</td>
-        <td>0</td>
-        <td>$0</td>
-    </tr>
+    <tbody id="standings-table">
+    </tbody>
 </table>
 
 <h2>Current Round</h2>
@@ -99,16 +74,15 @@
 <h2>Bookie Input</h2>
 
 <table>
-    <thead>
-        <tr>
-            <th>Friday</th>
-            <th>Punter</th>
-            <th>Bet</th>
-            <th>Result</th>
-            <th>Winnings</th>
-            
-        </tr>
-    </thead>
+   <thead>
+    <tr>
+        <th>Punter</th>
+        <th>Wins</th>
+        <th>Total Winnings</th>
+        <th>Current Streak</th>
+        <th>Best Streak</th>
+    </tr>
+</thead>
 
     <tbody id="betting-results">
     </tbody>
@@ -117,6 +91,12 @@
 <div id="player-list"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<h2>Round History</h2>
+
+<div id="round-history">
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>
