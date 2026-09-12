@@ -48,11 +48,11 @@
 <h2>This Week's Bet</h2>
 
 <div class="bet-card">
-    <p><strong>Player:</strong> Adam</p>
+    <p><strong>Player:</strong> <span id="current-bet-player">-</span></p>
     <p><strong>Sport:</strong> AFL</p>
-    <p><strong>Stake:</strong> $30</p>
-    <p><strong>Result:</strong> Win</p>
-    <p><strong>Winnings:</strong> $75</p>
+    <p><strong>Stake:</strong> $20</p>
+    <p><strong>Result:</strong> <span id="current-bet-result">-</span></p>
+    <p><strong>Winnings:</strong> $<span id="current-bet-winnings">0</span></p>
 </div>
 
 <h2>Schedule</h2>
@@ -74,15 +74,15 @@
 <h2>Bookie Input</h2>
 
 <table>
-   <thead>
-    <tr>
-        <th>Punter</th>
-        <th>Wins</th>
-        <th>Total Winnings</th>
-        <th>Current Streak</th>
-        <th>Best Streak</th>
-    </tr>
-</thead>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Punter</th>
+            <th>Stake</th>
+            <th>Result</th>
+            <th>Winnings</th>
+        </tr>
+    </thead>
 
     <tbody id="betting-results">
     </tbody>
