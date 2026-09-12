@@ -4,144 +4,380 @@
 
 body {
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
     color: #17202a;
 
     background:
-        radial-gradient(circle at 10% 10%, rgba(25, 169, 116, 0.18), transparent 30%),
-        radial-gradient(circle at 90% 20%, rgba(30, 100, 180, 0.20), transparent 35%),
-        linear-gradient(135deg, #dce9f2 0%, #edf3f6 45%, #d9eee7 100%);
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(25, 169, 116, 0.18),
+            transparent 30%
+        ),
+
+        radial-gradient(
+            circle at 90% 20%,
+            rgba(30, 100, 180, 0.20),
+            transparent 35%
+        ),
+
+        linear-gradient(
+            135deg,
+            #dce9f2 0%,
+            #edf3f6 45%,
+            #d9eee7 100%
+        );
 
     min-height: 100vh;
 }
 
 
-/* ------------------------------------
+/* ====================================
    HEADER
------------------------------------- */
+===================================== */
+
+header {
+    background:
+        linear-gradient(
+            120deg,
+            #061b2a,
+            #0b3045,
+            #064d42
+        );
+
+    color: white;
+
+    padding-bottom: 20px;
+}
+
 
 h1 {
     margin: 0;
-    padding: 25px 20px 5px;
 
-    background:
-        linear-gradient(120deg, #061b2a, #0b3045, #064d42);
+    padding:
+        25px
+        20px
+        5px;
 
-    color: white;
     font-size: 32px;
+
     letter-spacing: 0.5px;
 }
 
-body > p {
-    margin: 0;
-    padding: 5px 20px 25px;
 
-    background: linear-gradient(120deg, #061b2a, #064d42);
+header > p {
+    margin: 0;
+
+    padding:
+        5px
+        20px
+        20px;
 
     color: #c9f3e3;
-    font-size: 15px;
+
+    font-size: 17px;
 }
 
 
-/* ------------------------------------
+/* ====================================
+   PHOTO
+===================================== */
+
+.club-photo {
+    width: calc(100% - 30px);
+
+    max-width: 1000px;
+
+    margin:
+        10px
+        auto
+        0;
+
+    text-align: center;
+}
+
+
+.club-photo img {
+    width: 100%;
+
+    height: auto;
+
+    max-height: 280px;
+
+    object-fit: cover;
+
+    border-radius: 12px;
+
+    display: block;
+}
+
+
+/* ====================================
+   TABS
+===================================== */
+
+.tabs {
+    display: flex;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+
+    background: #061b2a;
+
+    box-shadow:
+        0 3px 10px
+        rgba(0, 0, 0, 0.2);
+}
+
+
+.tab-button {
+    flex: 1;
+
+    border: none;
+
+    background: #092536;
+
+    color: #b9d0d9;
+
+    padding:
+        16px
+        6px;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.tab-button.active {
+    background: #18b77b;
+
+    color: white;
+}
+
+
+.tab-button:active {
+    transform: scale(0.98);
+}
+
+
+/* ====================================
+   TAB CONTENT
+===================================== */
+
+.tab-content {
+    display: none;
+
+    padding-bottom: 40px;
+}
+
+
+.tab-content.active {
+    display: block;
+}
+
+
+/* ====================================
    HEADINGS
------------------------------------- */
+===================================== */
 
 h2 {
     max-width: 1100px;
-    margin: 30px auto 12px;
-    padding: 0 20px;
+
+    margin:
+        28px
+        auto
+        14px;
+
+    padding:
+        0
+        20px;
 
     color: #071d2b;
-    font-size: 21px;
+
+    font-size: 24px;
 }
 
 
-/* ------------------------------------
-   TABLES
------------------------------------- */
+/* ====================================
+   TABLE CONTAINER
+===================================== */
 
-table {
-    width: calc(100% - 40px);
-    max-width: 1060px;
+.table-container {
+    width: calc(100% - 30px);
+
+    max-width: 1100px;
 
     margin: 0 auto;
 
-    border-collapse: collapse;
-
-    background: rgba(255, 255, 255, 0.96);
+    overflow-x: auto;
 
     border-radius: 8px;
-    overflow: hidden;
 
     box-shadow:
-        0 4px 15px rgba(0, 40, 60, 0.12);
+        0 4px 15px
+        rgba(0, 40, 60, 0.12);
 }
 
-th {
-    padding: 14px;
 
-    background: linear-gradient(
-        90deg,
-        #092536,
-        #12455a
-    );
+/* ====================================
+   TABLES
+===================================== */
+
+table {
+    width: 100%;
+
+    min-width: 650px;
+
+    border-collapse: collapse;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.97
+        );
+}
+
+
+th {
+    padding: 15px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #092536,
+            #12455a
+        );
 
     color: white;
 
     text-align: left;
-    font-size: 14px;
+
+    font-size: 16px;
+
+    white-space: nowrap;
 }
 
+
 td {
-    padding: 13px 14px;
-    border-bottom: 1px solid #dfe7eb;
+    padding: 15px;
+
+    border-bottom:
+        1px solid #dfe7eb;
+
+    font-size: 16px;
+
+    white-space: nowrap;
 }
+
 
 tr:nth-child(even) td {
     background: #f4faf8;
 }
 
-tr:hover td {
-    background: #dff6ec;
+
+/* ====================================
+   STANDINGS CONTROLS
+===================================== */
+
+.standings-controls {
+    width: calc(100% - 30px);
+
+    max-width: 1100px;
+
+    margin:
+        0 auto
+        12px;
+
+    padding:
+        0
+        20px;
+
+    font-size: 17px;
 }
 
 
-/* ------------------------------------
-   CURRENT ROUND
------------------------------------- */
+select {
+    padding:
+        10px
+        12px;
+
+    margin-left: 8px;
+
+    border:
+        1px solid #b9cbd3;
+
+    border-radius: 6px;
+
+    background: white;
+
+    font-size: 16px;
+
+    min-height: 44px;
+}
+
+
+/* ====================================
+   ROTATION CARD
+===================================== */
 
 .rotation-card {
-    width: calc(100% - 40px);
-    max-width: 1060px;
+    width: calc(100% - 30px);
+
+    max-width: 1100px;
 
     margin: 0 auto;
 
-    padding: 20px;
+    padding: 22px;
 
-    background: rgba(255, 255, 255, 0.97);
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.97
+        );
 
-    border-radius: 8px;
+    border-radius: 10px;
 
-    border-left: 6px solid #18b77b;
+    border-left:
+        6px solid #18b77b;
 
     box-shadow:
-        0 4px 15px rgba(0, 40, 60, 0.12);
+        0 4px 15px
+        rgba(0, 40, 60, 0.12);
 }
+
 
 .rotation-card p {
-    margin: 9px 0;
+    margin: 12px 0;
+
+    font-size: 17px;
 }
 
 
-/* ------------------------------------
-   TOTAL KITTY
------------------------------------- */
+/* ====================================
+   KITTY
+===================================== */
 
 .rotation-card p:first-child {
-    margin: -20px -20px 20px;
+    margin:
+        -22px
+        -22px
+        20px;
 
-    padding: 20px;
+    padding: 22px;
 
     background:
         linear-gradient(
@@ -153,12 +389,18 @@ tr:hover td {
 
     color: white;
 
-    border-radius: 6px 6px 0 0;
+    border-radius:
+        6px
+        6px
+        0
+        0;
 }
+
 
 .rotation-card p:first-child strong {
     color: #b9d0d9;
 }
+
 
 #total-kitty {
     display: block;
@@ -167,50 +409,54 @@ tr:hover td {
 
     color: #25e49a;
 
-    font-size: 38px;
+    font-size: 40px;
+
     font-weight: 800;
 }
 
 
-/* ------------------------------------
-   CURRENT PUNTER
------------------------------------- */
+/* ====================================
+   CURRENT / NEXT PLAYER
+===================================== */
 
 #this-week {
     display: inline-block;
 
-    padding: 5px 12px;
+    padding:
+        6px
+        14px;
 
     background: #18b77b;
+
     color: white;
 
     border-radius: 20px;
 
     font-weight: bold;
+
+    font-size: 17px;
 }
 
 
-/* ------------------------------------
-   NEXT PUNTER
------------------------------------- */
-
 #next-week {
     font-weight: bold;
+
     color: #08704f;
 }
 
 
-/* ------------------------------------
-   THIS WEEK'S BET
------------------------------------- */
+/* ====================================
+   BET CARD
+===================================== */
 
 .bet-card {
-    width: calc(100% - 40px);
-    max-width: 1060px;
+    width: calc(100% - 30px);
+
+    max-width: 1100px;
 
     margin: 0 auto;
 
-    padding: 20px;
+    padding: 22px;
 
     background:
         linear-gradient(
@@ -219,112 +465,221 @@ tr:hover td {
             #eefaf5
         );
 
-    border-radius: 8px;
+    border-radius: 10px;
 
-    border-left: 6px solid #18b77b;
+    border-left:
+        6px solid #18b77b;
 
     box-shadow:
-        0 4px 15px rgba(0, 40, 60, 0.12);
+        0 4px 15px
+        rgba(0, 40, 60, 0.12);
 }
+
 
 .bet-card p {
-    margin: 9px 0;
+    margin: 13px 0;
+
+    font-size: 18px;
 }
 
 
-/* ------------------------------------
-   INPUTS
------------------------------------- */
+/* ====================================
+   BOOKIE INPUTS
+===================================== */
 
 input {
-    width: 100%;
-    min-width: 80px;
+    width: 90px;
 
-    padding: 9px;
+    padding: 10px;
 
-    border: 1px solid #b9cbd3;
-    border-radius: 5px;
+    border:
+        1px solid #b9cbd3;
+
+    border-radius: 6px;
 
     background: white;
 
-    font-size: 14px;
+    font-size: 16px;
+
+    min-height: 42px;
 }
+
 
 input:focus {
     outline: none;
 
-    border: 2px solid #18b77b;
+    border:
+        2px solid #18b77b;
 
     box-shadow:
-        0 0 0 3px rgba(24, 183, 123, 0.15);
+        0 0 0 3px
+        rgba(
+            24,
+            183,
+            123,
+            0.15
+        );
 }
 
 
-/* ------------------------------------
+/* ====================================
+   ROUND HISTORY
+===================================== */
+
+.history-round {
+    width: calc(100% - 30px);
+
+    max-width: 1100px;
+
+    margin:
+        20px auto;
+
+    padding: 20px;
+
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.97
+        );
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 4px 15px
+        rgba(0, 40, 60, 0.12);
+}
+
+
+.history-round h3 {
+    margin-top: 0;
+
+    font-size: 22px;
+}
+
+
+.history-round p {
+    font-size: 17px;
+}
+
+
+/* ====================================
    MOBILE
------------------------------------- */
+===================================== */
 
 @media (max-width: 700px) {
 
     h1 {
-        font-size: 25px;
-        padding: 20px 12px 5px;
+        font-size: 27px;
+
+        padding:
+            20px
+            14px
+            5px;
     }
 
-    body > p {
-        padding: 5px 12px 20px;
+
+    header > p {
+        padding:
+            5px
+            14px
+            15px;
+
+        font-size: 16px;
     }
+
+
+    .club-photo {
+        width: calc(100% - 20px);
+    }
+
+
+    .club-photo img {
+        max-height: 220px;
+    }
+
+
+    .tab-button {
+        padding:
+            15px
+            3px;
+
+        font-size: 15px;
+    }
+
 
     h2 {
-        padding: 0 12px;
-        font-size: 19px;
+        padding:
+            0
+            12px;
+
+        font-size: 22px;
+
+        margin-top: 25px;
     }
 
-    table {
+
+    .standings-controls {
         width: calc(100% - 24px);
-        font-size: 13px;
+
+        padding: 0 12px;
+
+        font-size: 16px;
     }
 
-    th,
-    td {
-        padding: 10px 7px;
+
+    .table-container {
+        width: calc(100% - 20px);
     }
+
+
+    th {
+        padding: 14px 12px;
+
+        font-size: 16px;
+    }
+
+
+    td {
+        padding: 14px 12px;
+
+        font-size: 16px;
+    }
+
 
     .rotation-card,
-    .bet-card {
-        width: calc(100% - 24px);
+    .bet-card,
+    .history-round {
+        width: calc(100% - 20px);
     }
+
+
+    .rotation-card {
+        padding: 20px;
+    }
+
+
+    .rotation-card p {
+        font-size: 17px;
+    }
+
 
     #total-kitty {
-        font-size: 32px;
+        font-size: 38px;
     }
-}
-.club-photo {
-    width: 100%;
-    max-width: 900px;
-    margin: 20px auto 30px;
-    text-align: center;
-}
 
-.club-photo img {
-    width: 100%;
-    height: auto;
-    max-height: 360px;
-    object-fit: cover;
-    border-radius: 12px;
-    display: block;
-}
-.standings-controls {
-    width: calc(100% - 40px);
-    max-width: 1060px;
-    margin: 0 auto 10px;
-}
 
-.standings-controls select {
-    margin-left: 8px;
-    padding: 8px 12px;
-    border: 1px solid #b9cbd3;
-    border-radius: 5px;
-    background: white;
-    font-size: 14px;
+    .bet-card p {
+        font-size: 18px;
+    }
+
+
+    input,
+    select {
+        font-size: 17px;
+
+        min-height: 44px;
+    }
+
 }

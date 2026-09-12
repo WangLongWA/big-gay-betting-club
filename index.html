@@ -3,205 +3,252 @@
 
 <head>
     <title>Big Gay Betting Club</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h1>Big Gay Betting Club</h1>
+<header>
+    <h1>Big Gay Betting Club</h1>
+    <p>Six Gay Lords. One betting club.</p>
 
-<p>Six Gay Lords. One betting club.</p>
-
-<div class="club-photo">
-    <img src="betting-club-photo.png" alt="Big Gay Betting Club">
-</div>
-
-
-<!-- ====================================
-     CURRENT STANDINGS
-===================================== -->
-
-<h2>Current Standings</h2>
-
-<div class="standings-controls">
-
-    <label for="standings-sort">
-        <strong>Sort By:</strong>
-    </label>
-
-    <select id="standings-sort">
-        <option value="wins">Most Wins</option>
-        <option value="winnings">Most Winnings</option>
-    </select>
-
-</div>
-
-<table>
-    <thead>
-        <tr>
-            <th>Punter</th>
-            <th>Wins</th>
-            <th>Total Winnings</th>
-            <th>Current Streak</th>
-            <th>Best Streak</th>
-        </tr>
-    </thead>
-
-    <tbody id="standings-table">
-    </tbody>
-</table>
+    <div class="club-photo">
+        <img src="betting-club-photo.png" alt="Big Gay Betting Club">
+    </div>
+</header>
 
 
 <!-- ====================================
-     CURRENT ROUND
+     TABS
 ===================================== -->
 
-<h2>Current Round</h2>
+<nav class="tabs">
 
-<div class="rotation-card">
+    <button class="tab-button active"
+            onclick="showTab('standings', this)">
+        🏆 Standings
+    </button>
 
-    <p>
-        <strong>Total Kitty:</strong>
-        <span id="total-kitty">$180</span>
-    </p>
+    <button class="tab-button"
+            onclick="showTab('round', this)">
+        🎯 Round
+    </button>
 
-    <p>
-        <strong>Round:</strong>
-        <span id="current-round">1</span>
-        of 6 weeks
-    </p>
+    <button class="tab-button"
+            onclick="showTab('history', this)">
+        📜 History
+    </button>
 
-    <p>
-        <strong>Weeks Completed:</strong>
-        <span id="weeks-completed">0</span> / 6
-    </p>
+</nav>
 
-    <p>
-        <strong>Total Winnings:</strong>
-        $<span id="total-winnings">0</span>
-    </p>
 
-    <p>
-        <strong>Week:</strong>
-        <span id="week-number"></span>
-    </p>
+<!-- ====================================
+     STANDINGS TAB
+===================================== -->
 
-    <p>
-        <strong>This Week:</strong>
-        <span id="this-week"></span>
-    </p>
+<div id="standings" class="tab-content active">
 
-    <p>
-        <strong>Next Week:</strong>
-        <span id="next-week"></span>
-    </p>
+    <h2>Current Standings</h2>
+
+    <div class="standings-controls">
+
+        <label for="standings-sort">
+            <strong>Sort By:</strong>
+        </label>
+
+        <select id="standings-sort">
+            <option value="wins">
+                Most Wins
+            </option>
+
+            <option value="winnings">
+                Most Winnings
+            </option>
+        </select>
+
+    </div>
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Punter</th>
+                    <th>Wins</th>
+                    <th>Winnings</th>
+                    <th>Streak</th>
+                    <th>Best</th>
+                </tr>
+            </thead>
+
+            <tbody id="standings-table">
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 
 
 <!-- ====================================
-     THIS WEEK'S BET
+     CURRENT ROUND TAB
 ===================================== -->
 
-<h2>This Week's Bet</h2>
+<div id="round" class="tab-content">
 
-<div class="bet-card">
+    <h2>Current Round</h2>
 
-    <p>
-        <strong>Player:</strong>
-        <span id="current-bet-player">-</span>
-    </p>
+    <div class="rotation-card">
 
-    <p>
-        <strong>Stake:</strong>
-        $20
-    </p>
+        <p>
+            <strong>Total Kitty</strong>
+            <span id="total-kitty">$180</span>
+        </p>
 
-    <p>
-        <strong>Odds:</strong>
-        <span id="current-bet-odds">-</span>
-    </p>
+        <p>
+            <strong>Round:</strong>
+            <span id="current-round">1</span>
+            of 6 weeks
+        </p>
 
-    <p>
-        <strong>Result:</strong>
-        <span id="current-bet-result">-</span>
-    </p>
+        <p>
+            <strong>Weeks Completed:</strong>
+            <span id="weeks-completed">0</span> / 6
+        </p>
 
-    <p>
-        <strong>Winnings:</strong>
-        $<span id="current-bet-winnings">0</span>
-    </p>
+        <p>
+            <strong>Total Winnings:</strong>
+            $<span id="total-winnings">0</span>
+        </p>
+
+        <p>
+            <strong>Friday:</strong>
+            <span id="week-number"></span>
+        </p>
+
+        <p>
+            <strong>This Week:</strong>
+            <span id="this-week"></span>
+        </p>
+
+        <p>
+            <strong>Next Week:</strong>
+            <span id="next-week"></span>
+        </p>
+
+    </div>
+
+
+    <h2>This Week's Bet</h2>
+
+    <div class="bet-card">
+
+        <p>
+            <strong>Player:</strong>
+            <span id="current-bet-player">-</span>
+        </p>
+
+        <p>
+            <strong>Stake:</strong>
+            $20
+        </p>
+
+        <p>
+            <strong>Odds:</strong>
+            <span id="current-bet-odds">-</span>
+        </p>
+
+        <p>
+            <strong>Result:</strong>
+            <span id="current-bet-result">-</span>
+        </p>
+
+        <p>
+            <strong>Winnings:</strong>
+            $<span id="current-bet-winnings">0</span>
+        </p>
+
+    </div>
+
+
+    <h2>Schedule</h2>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Week</th>
+                    <th>Friday</th>
+                    <th>Punter</th>
+                </tr>
+            </thead>
+
+            <tbody id="round-schedule">
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <h2>Bookie Input</h2>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Punter</th>
+                    <th>Stake</th>
+                    <th>Odds</th>
+                    <th>Result</th>
+                    <th>Winnings</th>
+                </tr>
+            </thead>
+
+            <tbody id="betting-results">
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 
 
 <!-- ====================================
-     SCHEDULE
+     HISTORY TAB
 ===================================== -->
 
-<h2>Schedule</h2>
+<div id="history" class="tab-content">
 
-<table>
+    <h2>Round History</h2>
 
-    <thead>
-        <tr>
-            <th>Week</th>
-            <th>Friday</th>
-            <th>Punter</th>
-        </tr>
-    </thead>
+    <div class="rotation-card">
 
-    <tbody id="round-schedule">
-    </tbody>
+        <label for="round-selector">
+            <strong>Select Round:</strong>
+        </label>
 
-</table>
+        <select id="round-selector">
+            <option value="">
+                Loading rounds...
+            </option>
+        </select>
 
+    </div>
 
-<!-- ====================================
-     BOOKIE INPUT
-===================================== -->
+    <div id="round-history">
+    </div>
 
-<h2>Bookie Input</h2>
-
-<table>
-
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Punter</th>
-            <th>Stake</th>
-            <th>Odds</th>
-            <th>Result</th>
-            <th>Winnings</th>
-        </tr>
-    </thead>
-
-    <tbody id="betting-results">
-    </tbody>
-
-</table>
-
-
-<!-- ====================================
-     ROUND HISTORY
-===================================== -->
-
-<h2>Round History</h2>
-
-<div class="rotation-card">
-
-    <p>
-        <strong>Select Round:</strong>
-    </p>
-
-    <select id="round-selector">
-        <option value="">Loading rounds...</option>
-    </select>
-
-</div>
-
-
-<div id="round-history">
 </div>
 
 
@@ -212,6 +259,44 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="script.js"></script>
+
+
+<!-- ====================================
+     TAB FUNCTION
+===================================== -->
+
+<script>
+
+function showTab(tabName, button) {
+
+    document
+        .querySelectorAll(".tab-content")
+        .forEach(function(tab) {
+
+            tab.classList.remove("active");
+
+        });
+
+
+    document
+        .querySelectorAll(".tab-button")
+        .forEach(function(btn) {
+
+            btn.classList.remove("active");
+
+        });
+
+
+    document
+        .getElementById(tabName)
+        .classList.add("active");
+
+
+    button.classList.add("active");
+
+}
+
+</script>
 
 </body>
 </html>
