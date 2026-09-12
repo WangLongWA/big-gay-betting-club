@@ -26,61 +26,41 @@ const players = [
 
 
 // ====================================
-// ROUND SETTINGS
+// SETTINGS
 // ====================================
 
 const WEEKS_PER_ROUND = 6;
+const MAX_ROUNDS = 30;
 
 const STAKE = 20;
-
 const CONTRIBUTION = 30;
-
-const UNBET_AMOUNT =
-    CONTRIBUTION - STAKE;
+const UNBET_AMOUNT = CONTRIBUTION - STAKE;
 
 const STARTING_KITTY = 180;
 
-
-// First Friday of Round 1
-
-const startFriday =
-    new Date(2026, 8, 4);
-
+const startFriday = new Date(2026, 8, 4);
 startFriday.setHours(0, 0, 0, 0);
 
 
 // ====================================
-// GET CURRENT FRIDAY
+// CURRENT DATE / ROUND
 // ====================================
 
 function getCurrentFriday() {
 
-    const today =
-        new Date();
+    const today = new Date();
 
-    today.setHours(
-        0,
-        0,
-        0,
-        0
-    );
+    today.setHours(0, 0, 0, 0);
 
-    const day =
-        today.getDay();
-
-    // Friday = 5
-    // Work backwards to the most
-    // recent Friday.
+    const day = today.getDay();
 
     const daysSinceFriday =
         (day + 2) % 7;
 
-    const friday =
-        new Date(today);
+    const friday = new Date(today);
 
     friday.setDate(
-        today.getDate() -
-        daysSinceFriday
+        today.getDate() - daysSinceFriday
     );
 
     return friday;
@@ -91,12 +71,9 @@ const bettingFriday =
     getCurrentFriday();
 
 
-// ====================================
-// WORK OUT ROUND / WEEK
-// ====================================
-
 const millisecondsPerWeek =
     7 * 24 * 60 * 60 * 1000;
+
 
 const totalWeeksSinceStart =
     Math.max(
@@ -126,32 +103,43 @@ const currentWeek =
 
 
 // ====================================
-// CURRENT PUNTER
+// SELECTED BOOKIE ROUND
 // ====================================
 
-const currentPlayerIndex =
-    totalWeeksSinceStart %
-    players.length;
-
-
-const nextPlayerIndex =
-    (
-        currentPlayerIndex + 1
-    ) %
-    players.length;
-
-
-const currentPlayer =
-    players[currentPlayerIndex];
-
-
-const nextPlayer =
-    players[nextPlayerIndex];
+let selectedBookieRound =
+    currentRound;
 
 
 // ====================================
-// DATE FUNCTIONS
+// DATE HELPERS
 // ====================================
+
+function getRoundStartWeek(round) {
+
+    return (
+        (round - 1) *
+        WEEKS_PER_ROUND
+    );
+}
+
+
+function getWeekDate(round, week) {
+
+    const actualWeek =
+        getRoundStartWeek(round) +
+        (week - 1);
+
+    const date =
+        new Date(startFriday);
+
+    date.setDate(
+        startFriday.getDate() +
+        actualWeek * 7
+    );
+
+    return date;
+}
+
 
 function formatDate(date) {
 
@@ -191,20 +179,33 @@ function formatDatabaseDate(date) {
 }
 
 
+function getPunter(round, week) {
+
+    const actualWeek =
+        getRoundStartWeek(round) +
+        (week - 1);
+
+    return players[
+        actualWeek %
+        players.length
+    ];
+}
+
+
 // ====================================
-// DISPLAY CURRENT ROUND
+// CURRENT ROUND DISPLAY
 // ====================================
 
 function displayCurrentRound() {
 
-    const roundElement =
+    const currentRoundElement =
         document.getElementById(
             "current-round"
         );
 
-    if (roundElement) {
+    if (currentRoundElement) {
 
-        roundElement.textContent =
+        currentRoundElement.textContent =
             currentRound;
     }
 
@@ -223,81 +224,274 @@ function displayCurrentRound() {
     }
 
 
-    const thisWeekElement =
+    const currentPlayerIndex =
+        totalWeeksSinceStart %
+        players.length;
+
+
+    const nextPlayerIndex =
+        (
+            currentPlayerIndex + 1
+        ) %
+        players.length;
+
+
+    const thisWeek =
         document.getElementById(
             "this-week"
         );
 
-    if (thisWeekElement) {
+    if (thisWeek) {
 
-        thisWeekElement.textContent =
-            currentPlayer;
+        thisWeek.textContent =
+            players[currentPlayerIndex];
     }
 
 
-    const nextWeekElement =
+    const nextWeek =
         document.getElementById(
             "next-week"
         );
 
-    if (nextWeekElement) {
+    if (nextWeek) {
 
-        nextWeekElement.textContent =
-            nextPlayer;
+        nextWeek.textContent =
+            players[nextPlayerIndex];
     }
 }
 
 
 // ====================================
-// BUILD SCHEDULE
+// ROUND SELECTOR BUILDER
 // ====================================
 
-function buildSchedule() {
+function populateRoundSelector(
+    selector,
+    selectedRound
+) {
 
-    const schedule =
-        document.getElementById(
-            "round-schedule"
-        );
-
-    if (!schedule) {
+    if (!selector) {
         return;
     }
 
-    schedule.innerHTML = "";
 
-
-    const roundStartWeek =
-        totalWeeksSinceStart -
-        (currentWeek - 1);
+    selector.innerHTML = "";
 
 
     for (
-        let i = 0;
-        i < WEEKS_PER_ROUND;
-        i++
+        let round = 1;
+        round <= MAX_ROUNDS;
+        round++
     ) {
 
-        const actualWeek =
-            roundStartWeek + i;
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            round;
+
+        option.textContent =
+            "Round " + round;
+
+        selector.appendChild(
+            option
+        );
+    }
 
 
-        const weekDate =
-            new Date(startFriday);
+    selector.value =
+        selectedRound;
+}
 
 
-        weekDate.setDate(
-            startFriday.getDate() +
-            (
-                actualWeek * 7
-            )
+// ====================================
+// BOOKIE ROUND SELECTOR
+// ====================================
+
+function setupBookieSelector() {
+
+    const table =
+        document.getElementById(
+            "betting-results"
+        );
+
+    if (!table) {
+        return;
+    }
+
+
+    /*
+     Create selector above the
+     Bookie Input table.
+    */
+
+    const heading =
+        table.closest(".table-container")
+            ?.previousElementSibling;
+
+
+    if (
+        heading &&
+        heading.dataset.selectorAdded
+    ) {
+        return;
+    }
+
+
+    if (heading) {
+
+        heading.dataset.selectorAdded =
+            "true";
+
+
+        const controls =
+            document.createElement(
+                "div"
+            );
+
+        controls.className =
+            "standings-controls";
+
+
+        controls.innerHTML = `
+
+            <label for="bookie-round-selector">
+                <strong>Enter Results For:</strong>
+            </label>
+
+            <select id="bookie-round-selector">
+            </select>
+
+        `;
+
+
+        heading.insertAdjacentElement(
+            "afterend",
+            controls
+        );
+    }
+
+
+    const selector =
+        document.getElementById(
+            "bookie-round-selector"
         );
 
 
+    populateRoundSelector(
+        selector,
+        currentRound
+    );
+
+
+    if (selector) {
+
+        selector.addEventListener(
+            "change",
+            async function() {
+
+                selectedBookieRound =
+                    Number(
+                        this.value
+                    );
+
+                await buildBookieTable(
+                    selectedBookieRound
+                );
+
+            }
+        );
+    }
+}
+
+
+// ====================================
+// BUILD BOOKIE TABLE
+// ====================================
+
+async function buildBookieTable(
+    round
+) {
+
+    const table =
+        document.getElementById(
+            "betting-results"
+        );
+
+    if (!table) {
+        return;
+    }
+
+
+    table.innerHTML = "";
+
+
+    /*
+     Load existing results for
+     the selected round.
+    */
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("betting_results")
+            .select("*")
+            .eq("round", round)
+            .order(
+                "week",
+                {
+                    ascending: true
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "Error loading selected round:",
+            error
+        );
+
+        return;
+    }
+
+
+    for (
+        let week = 1;
+        week <= WEEKS_PER_ROUND;
+        week++
+    ) {
+
+        const existing =
+            data.find(
+                function(bet) {
+
+                    return (
+                        Number(
+                            bet.week
+                        ) === week
+                    );
+
+                }
+            );
+
+
+        const date =
+            getWeekDate(
+                round,
+                week
+            );
+
+
         const punter =
-            players[
-                actualWeek %
-                players.length
-            ];
+            getPunter(
+                round,
+                week
+            );
 
 
         const row =
@@ -306,81 +500,57 @@ function buildSchedule() {
             );
 
 
-        row.innerHTML = `
-            <td>${i + 1}</td>
-            <td>${formatDate(weekDate)}</td>
-            <td>${punter}</td>
-        `;
+        const odds =
+            existing &&
+            existing.odds !== null &&
+            existing.odds !== undefined
+
+                ? existing.odds
+
+                : "";
 
 
-        schedule.appendChild(row);
-    }
-}
+        let result =
+            existing
+                ? (
+                    existing.result ||
+                    ""
+                )
+                    .toString()
+                    .trim()
+                    .toUpperCase()
+
+                : "";
 
 
-// ====================================
-// BUILD BOOKIE INPUT
-// ====================================
+        /*
+         Convert old Win/Loss records
+         to W/L automatically.
+        */
 
-function buildBettingTable() {
+        if (result === "WIN") {
+            result = "W";
+        }
 
-    const tableBody =
-        document.getElementById(
-            "betting-results"
-        );
-
-    if (!tableBody) {
-        return;
-    }
-
-
-    tableBody.innerHTML = "";
+        if (
+            result === "LOSS" ||
+            result === "LOSE"
+        ) {
+            result = "L";
+        }
 
 
-    const roundStartWeek =
-        totalWeeksSinceStart -
-        (currentWeek - 1);
-
-
-    for (
-        let i = 0;
-        i < WEEKS_PER_ROUND;
-        i++
-    ) {
-
-        const actualWeek =
-            roundStartWeek + i;
-
-
-        const weekDate =
-            new Date(startFriday);
-
-
-        weekDate.setDate(
-            startFriday.getDate() +
-            (
-                actualWeek * 7
-            )
-        );
-
-
-        const punter =
-            players[
-                actualWeek %
-                players.length
-            ];
-
-
-        const row =
-            document.createElement(
-                "tr"
+        const winnings =
+            calculateWinnings(
+                odds,
+                result
             );
 
 
         row.innerHTML = `
 
             <td>
-                ${formatDate(weekDate)}
+                ${formatDate(date)}
             </td>
 
             <td>
@@ -398,104 +568,128 @@ function buildBettingTable() {
                     min="1"
                     step="0.01"
                     placeholder="2.50"
-                    data-week="${i + 1}"
+                    value="${odds}"
+                    data-round="${round}"
+                    data-week="${week}"
                 >
             </td>
 
             <td>
                 <select
                     class="result"
-                    data-week="${i + 1}"
+                    data-round="${round}"
+                    data-week="${week}"
                 >
+
                     <option value="">
                         -
                     </option>
 
-                    <option value="W">
+                    <option
+                        value="W"
+                        ${result === "W" ? "selected" : ""}
+                    >
                         W
                     </option>
 
-                    <option value="L">
+                    <option
+                        value="L"
+                        ${result === "L" ? "selected" : ""}
+                    >
                         L
                     </option>
+
                 </select>
             </td>
 
             <td>
                 <span
                     class="winnings"
-                    data-week="${i + 1}"
+                    data-week="${week}"
                 >
-                    $0.00
+                    $${winnings.toFixed(2)}
                 </span>
             </td>
 
         `;
 
 
-        tableBody.appendChild(row);
+        table.appendChild(row);
     }
 
 
-    // Odds changed
+    /*
+     Add event listeners after
+     table has been created.
+    */
 
-    document
+    table
         .querySelectorAll(".odds")
-        .forEach(function(input) {
+        .forEach(
+            function(input) {
 
-            input.addEventListener(
-                "change",
-                function() {
+                input.addEventListener(
+                    "change",
+                    function() {
 
-                    const index =
-                        Number(
-                            this.dataset.week
-                        ) - 1;
-
-
-                    updateDisplayedWinnings(
-                        index
-                    );
+                        const week =
+                            Number(
+                                this.dataset.week
+                            );
 
 
-                    saveBet(index);
-                }
-            );
-
-        });
+                        updateDisplayedWinnings(
+                            week
+                        );
 
 
-    // Result changed
+                        saveBet(
+                            round,
+                            week
+                        );
 
-    document
+                    }
+                );
+
+            }
+        );
+
+
+    table
         .querySelectorAll(".result")
-        .forEach(function(input) {
+        .forEach(
+            function(input) {
 
-            input.addEventListener(
-                "change",
-                function() {
+                input.addEventListener(
+                    "change",
+                    function() {
 
-                    const index =
-                        Number(
-                            this.dataset.week
-                        ) - 1;
-
-
-                    updateDisplayedWinnings(
-                        index
-                    );
+                        const week =
+                            Number(
+                                this.dataset.week
+                            );
 
 
-                    saveBet(index);
-                }
-            );
+                        updateDisplayedWinnings(
+                            week
+                        );
 
-        });
+
+                        saveBet(
+                            round,
+                            week
+                        );
+
+                    }
+                );
+
+            }
+        );
 }
 
 
 // ====================================
-// CALCULATE PAYOUT
+// CALCULATE WINNINGS
 // ====================================
 
 function calculateWinnings(
@@ -526,207 +720,52 @@ function calculateWinnings(
 
 
 // ====================================
-// UPDATE PAYOUT ON SCREEN
+// UPDATE WINNINGS DISPLAY
 // ====================================
 
 function updateDisplayedWinnings(
-    index
+    week
 ) {
 
-    const oddsInputs =
-        document.querySelectorAll(
-            ".odds"
+    const oddsInput =
+        document.querySelector(
+            `.odds[data-week="${week}"]`
         );
 
 
-    const resultInputs =
-        document.querySelectorAll(
-            ".result"
+    const resultInput =
+        document.querySelector(
+            `.result[data-week="${week}"]`
         );
 
 
-    const winningsDisplays =
-        document.querySelectorAll(
-            ".winnings"
-        );
-
-
-    const odds =
-        oddsInputs[index]
-            ? Number(
-                oddsInputs[index].value
-            )
-            : 0;
-
-
-    const result =
-        resultInputs[index]
-            ? resultInputs[index].value
-            : "";
-
-
-    const winnings =
-        calculateWinnings(
-            odds,
-            result
+    const winningsDisplay =
+        document.querySelector(
+            `.winnings[data-week="${week}"]`
         );
 
 
     if (
-        winningsDisplays[index]
+        !oddsInput ||
+        !resultInput ||
+        !winningsDisplay
     ) {
-
-        winningsDisplays[index]
-            .textContent =
-            "$" +
-            winnings.toFixed(2);
-    }
-}
-
-// ====================================
-// STANDINGS SORT SELECTOR
-// ====================================
-
-const standingsSort =
-    document.getElementById(
-        "standings-sort"
-    );
-
-if (standingsSort) {
-
-    standingsSort.addEventListener(
-        "change",
-        async function() {
-
-            const data =
-                await loadAllResults();
-
-            updateStandings(data);
-
-        }
-    );
-
-}
-
-// ====================================
-// LOAD CURRENT ROUND
-// ====================================
-
-async function loadCurrentRound() {
-
-    const {
-        data,
-        error
-    } =
-        await supabaseClient
-            .from(
-                "betting_results"
-            )
-            .select("*")
-            .eq(
-                "round",
-                currentRound
-            )
-            .order(
-                "week",
-                {
-                    ascending: true
-                }
-            );
-
-
-    if (error) {
-
-        console.error(
-            "Error loading current round:",
-            error
-        );
-
         return;
     }
 
 
-    const oddsInputs =
-        document.querySelectorAll(
-            ".odds"
-        );
-
-
-    const resultInputs =
-        document.querySelectorAll(
-            ".result"
-        );
-
-
-    data.forEach(function(bet) {
-
-        const index =
+    const winnings =
+        calculateWinnings(
             Number(
-                bet.week
-            ) - 1;
-
-
-        if (
-            oddsInputs[index]
-        ) {
-
-            if (
-                bet.odds !== null &&
-                bet.odds !== undefined
-            ) {
-
-                oddsInputs[index]
-                    .value =
-                    bet.odds;
-            }
-        }
-
-
-        if (
-            resultInputs[index]
-        ) {
-
-            let result =
-                (
-                    bet.result ||
-                    ""
-                )
-                .toString()
-                .trim()
-                .toUpperCase();
-
-
-            // Convert old data
-
-            if (
-                result === "WIN"
-            ) {
-                result = "W";
-            }
-
-
-            if (
-                result === "LOSS" ||
-                result === "LOSE"
-            ) {
-                result = "L";
-            }
-
-
-            resultInputs[index]
-                .value =
-                result;
-        }
-
-
-        updateDisplayedWinnings(
-            index
+                oddsInput.value
+            ),
+            resultInput.value
         );
 
-    });
 
-
-    await refreshAllDisplays();
+    winningsDisplay.textContent =
+        "$" +
+        winnings.toFixed(2);
 }
 
 
@@ -734,32 +773,41 @@ async function loadCurrentRound() {
 // SAVE BET
 // ====================================
 
-async function saveBet(index) {
+async function saveBet(
+    round,
+    week
+) {
 
-    const oddsInputs =
-        document.querySelectorAll(
-            ".odds"
+    const oddsInput =
+        document.querySelector(
+            `.odds[data-week="${week}"]`
         );
 
 
-    const resultInputs =
-        document.querySelectorAll(
-            ".result"
+    const resultInput =
+        document.querySelector(
+            `.result[data-week="${week}"]`
         );
+
+
+    if (
+        !oddsInput ||
+        !resultInput
+    ) {
+        return;
+    }
 
 
     const odds =
-        oddsInputs[index]
-            ? Number(
-                oddsInputs[index].value
-            )
-            : 0;
+        oddsInput.value === ""
+            ? null
+            : Number(
+                oddsInput.value
+            );
 
 
     const result =
-        resultInputs[index]
-            ? resultInputs[index].value
-            : "";
+        resultInput.value;
 
 
     const winnings =
@@ -769,58 +817,40 @@ async function saveBet(index) {
         );
 
 
-    const week =
-        index + 1;
-
-
-    const actualWeekNumber =
-        totalWeeksSinceStart -
-        (currentWeek - 1) +
-        index;
-
-
-    const weekDate =
-        new Date(startFriday);
-
-
-    weekDate.setDate(
-        startFriday.getDate() +
-        (
-            actualWeekNumber * 7
-        )
-    );
+    const date =
+        getWeekDate(
+            round,
+            week
+        );
 
 
     const friday =
         formatDatabaseDate(
-            weekDate
+            date
         );
 
 
     const punter =
-        players[
-            actualWeekNumber %
-            players.length
-        ];
+        getPunter(
+            round,
+            week
+        );
 
+
+    /*
+     Check whether this
+     round/week already exists.
+    */
 
     const {
         data: existing,
         error: findError
     } =
         await supabaseClient
-            .from(
-                "betting_results"
-            )
+            .from("betting_results")
             .select("id")
-            .eq(
-                "round",
-                currentRound
-            )
-            .eq(
-                "week",
-                week
-            )
+            .eq("round", round)
+            .eq("week", week)
             .maybeSingle();
 
 
@@ -838,7 +868,7 @@ async function saveBet(index) {
     const betData = {
 
         round:
-            currentRound,
+            round,
 
         week:
             week,
@@ -853,7 +883,7 @@ async function saveBet(index) {
             result,
 
         odds:
-            odds || null,
+            odds,
 
         winnings:
             winnings
@@ -861,17 +891,13 @@ async function saveBet(index) {
     };
 
 
-    // UPDATE
-
     if (existing) {
 
         const {
             error
         } =
             await supabaseClient
-                .from(
-                    "betting_results"
-                )
+                .from("betting_results")
                 .update(
                     betData
                 )
@@ -891,20 +917,13 @@ async function saveBet(index) {
             return;
         }
 
-    }
-
-
-    // INSERT
-
-    else {
+    } else {
 
         const {
             error
         } =
             await supabaseClient
-                .from(
-                    "betting_results"
-                )
+                .from("betting_results")
                 .insert(
                     betData
                 );
@@ -922,7 +941,7 @@ async function saveBet(index) {
     }
 
 
-    await refreshAllDisplays();
+    await refreshAll();
 }
 
 
@@ -937,9 +956,7 @@ async function loadAllResults() {
         error
     } =
         await supabaseClient
-            .from(
-                "betting_results"
-            )
+            .from("betting_results")
             .select("*")
             .order(
                 "round",
@@ -971,7 +988,7 @@ async function loadAllResults() {
 
 
 // ====================================
-// CALCULATE LIFETIME KITTY
+// KITTY
 // ====================================
 
 function calculateKitty(
@@ -986,96 +1003,66 @@ function calculateKitty(
         0;
 
 
-    let completedBets =
-        0;
+    data.forEach(
+        function(bet) {
+
+            const result =
+                (
+                    bet.result ||
+                    ""
+                )
+                    .toString()
+                    .trim()
+                    .toUpperCase();
 
 
-    data.forEach(function(bet) {
-
-        const result =
-            (
-                bet.result ||
-                ""
-            )
-            .toString()
-            .trim()
-            .toUpperCase();
+            if (
+                result !== "W" &&
+                result !== "L"
+            ) {
+                return;
+            }
 
 
-        if (
-            result !== "W" &&
-            result !== "L"
-        ) {
-            return;
-        }
+            const winnings =
+                Number(
+                    bet.winnings
+                ) || 0;
 
 
-        const winnings =
-            Number(
-                bet.winnings
-            ) || 0;
-
-
-        /*
-         Each player contributes $30.
-
-         $20 is bet.
-         $10 remains in kitty.
-
-         Therefore:
-
-         Loss:
-         -$20 stake + $10 saved
-         = -$10
-
-         Win:
-         -$20 stake
-         + $10 saved
-         + payout
-
-         = payout - $10
-        */
-
-        kitty +=
-            UNBET_AMOUNT -
-            STAKE +
-            winnings;
-
-
-        if (
-            result === "W"
-        ) {
-
-            totalWinnings +=
+            kitty +=
+                UNBET_AMOUNT -
+                STAKE +
                 winnings;
+
+
+            if (
+                result === "W"
+            ) {
+
+                totalWinnings +=
+                    winnings;
+            }
+
         }
-
-
-        completedBets++;
-
-    });
+    );
 
 
     return {
-
         kitty:
             kitty,
 
         totalWinnings:
-            totalWinnings,
-
-        completedBets:
-            completedBets
-
+            totalWinnings
     };
 }
 
 
 // ====================================
-// UPDATE KITTY
+// UPDATE KITTY DISPLAY
 // ====================================
 
-function updateKittyDisplay(
+function updateKitty(
     data
 ) {
 
@@ -1085,76 +1072,63 @@ function updateKittyDisplay(
         );
 
 
-    const kittyElement =
+    const kitty =
         document.getElementById(
             "total-kitty"
         );
 
 
-    if (
-        kittyElement
-    ) {
+    if (kitty) {
 
-        kittyElement.textContent =
+        kitty.textContent =
             "$" +
             stats.kitty.toFixed(0);
     }
 
 
-    const winningsElement =
+    const winnings =
         document.getElementById(
             "total-winnings"
         );
 
 
-    if (
-        winningsElement
-    ) {
+    if (winnings) {
 
-        winningsElement.textContent =
+        winnings.textContent =
             stats.totalWinnings.toFixed(0);
     }
 
 
-    const weeksElement =
+    const weeks =
         document.getElementById(
             "weeks-completed"
         );
 
 
-    if (
-        weeksElement
-    ) {
+    if (weeks) {
 
-        // Only current round
-
-        const currentRoundBets =
+        const completed =
             data.filter(
                 function(bet) {
 
-                    return (
+                    if (
                         Number(
                             bet.round
-                        ) ===
+                        ) !==
                         currentRound
-                    );
+                    ) {
+                        return false;
+                    }
 
-                }
-            );
-
-
-        const completed =
-            currentRoundBets.filter(
-                function(bet) {
 
                     const result =
                         (
                             bet.result ||
                             ""
                         )
-                        .toString()
-                        .trim()
-                        .toUpperCase();
+                            .toString()
+                            .trim()
+                            .toUpperCase();
 
 
                     return (
@@ -1166,14 +1140,14 @@ function updateKittyDisplay(
             ).length;
 
 
-        weeksElement.textContent =
+        weeks.textContent =
             completed;
     }
 }
 
 
 // ====================================
-// LIFETIME STANDINGS
+// STANDINGS
 // ====================================
 
 function updateStandings(
@@ -1195,13 +1169,7 @@ function updateStandings(
                     0,
 
                 results:
-                    [],
-
-                currentStreak:
-                    0,
-
-                bestStreak:
-                    0
+                    []
 
             };
 
@@ -1212,29 +1180,38 @@ function updateStandings(
     data.forEach(
         function(bet) {
 
-            if (
-                !standings[
-                    bet.punter
-                ]
-            ) {
-                return;
-            }
-
-
             const player =
                 standings[
                     bet.punter
                 ];
 
 
-            const result =
+            if (!player) {
+                return;
+            }
+
+
+            let result =
                 (
                     bet.result ||
                     ""
                 )
-                .toString()
-                .trim()
-                .toUpperCase();
+                    .toString()
+                    .trim()
+                    .toUpperCase();
+
+
+            if (result === "WIN") {
+                result = "W";
+            }
+
+
+            if (
+                result === "LOSS" ||
+                result === "LOSE"
+            ) {
+                result = "L";
+            }
 
 
             if (
@@ -1258,16 +1235,8 @@ function updateStandings(
                         bet.round
                     ),
 
-                week:
-                    Number(
-                        bet.week
-                    ),
-
                 result:
-                    result,
-
-                winnings:
-                    winnings
+                    result
 
             });
 
@@ -1286,13 +1255,12 @@ function updateStandings(
     );
 
 
-    // ====================================
-    // STREAKS
-    //
-    // IMPORTANT:
-    // Each player only bets ONCE per round.
-    // Streaks therefore work by ROUND.
-    // ====================================
+    /*
+     Calculate streaks by ROUND.
+
+     Each player only has one bet
+     per round.
+    */
 
     players.forEach(
         function(player) {
@@ -1313,43 +1281,18 @@ function updateStandings(
             );
 
 
-            let currentStreak =
-                0;
-
-
-            let bestStreak =
-                0;
-
-
-            let lastRound =
-                null;
+            let currentStreak = 0;
+            let bestStreak = 0;
 
 
             stats.results.forEach(
                 function(bet) {
 
                     if (
-                        lastRound !== null &&
-                        bet.round ===
-                        lastRound
-                    ) {
-
-                        // Same round.
-                        // Shouldn't happen because
-                        // there is one bet per player
-                        // per round.
-
-                        return;
-                    }
-
-
-                    if (
-                        bet.result ===
-                        "W"
+                        bet.result === "W"
                     ) {
 
                         currentStreak++;
-
 
                         if (
                             currentStreak >
@@ -1360,31 +1303,15 @@ function updateStandings(
                                 currentStreak;
                         }
 
-                    }
-
-                    else {
+                    } else {
 
                         currentStreak =
                             0;
                     }
 
-
-                    lastRound =
-                        bet.round;
-
                 }
             );
 
-
-            /*
-             We need current streak to represent
-             the most recent consecutive rounds.
-
-             If the latest recorded bet isn't
-             the most recent round that player
-             has played, it still represents their
-             current streak from their latest result.
-            */
 
             stats.currentStreak =
                 currentStreak;
@@ -1396,78 +1323,72 @@ function updateStandings(
     );
 
 
-    // ====================================
-    // SORT STANDINGS
-    //
-    // 1. Most wins
-    // 2. Highest winnings
-    // 3. Original player order
-    // ====================================
-
-// ====================================
-// SORT STANDINGS
-// ====================================
-
-const sortSelector =
-    document.getElementById("standings-sort");
-
-const sortBy =
-    sortSelector
-        ? sortSelector.value
-        : "wins";
+    const selector =
+        document.getElementById(
+            "standings-sort"
+        );
 
 
-const sortedPlayers =
-    [...players].sort(function(a, b) {
+    const sortBy =
+        selector
+            ? selector.value
+            : "wins";
 
-        if (sortBy === "winnings") {
 
-            if (
-                standings[b].totalWinnings !==
-                standings[a].totalWinnings
-            ) {
+    const sortedPlayers =
+        [...players].sort(
+            function(a, b) {
+
+                if (
+                    sortBy ===
+                    "winnings"
+                ) {
+
+                    if (
+                        standings[b]
+                            .totalWinnings !==
+                        standings[a]
+                            .totalWinnings
+                    ) {
+
+                        return (
+                            standings[b]
+                                .totalWinnings -
+                            standings[a]
+                                .totalWinnings
+                        );
+                    }
+
+
+                    return (
+                        standings[b].wins -
+                        standings[a].wins
+                    );
+                }
+
+
+                if (
+                    standings[b].wins !==
+                    standings[a].wins
+                ) {
+
+                    return (
+                        standings[b].wins -
+                        standings[a].wins
+                    );
+                }
+
 
                 return (
-                    standings[b].totalWinnings -
-                    standings[a].totalWinnings
+                    standings[b]
+                        .totalWinnings -
+                    standings[a]
+                        .totalWinnings
                 );
 
             }
-
-            // Tie breaker = most wins
-
-            return (
-                standings[b].wins -
-                standings[a].wins
-            );
-        }
-
-
-        // Default = most wins
-
-        if (
-            standings[b].wins !==
-            standings[a].wins
-        ) {
-
-            return (
-                standings[b].wins -
-                standings[a].wins
-            );
-        }
-
-        // Tie breaker = most winnings
-
-        return (
-            standings[b].totalWinnings -
-            standings[a].totalWinnings
         );
 
-    });
-
-    // ====================================
-    // DISPLAY
-    // ====================================
 
     const table =
         document.getElementById(
@@ -1490,22 +1411,18 @@ const sortedPlayers =
                 standings[player];
 
 
-            const currentStreak =
-                stats.currentStreak >
-                0
+            const streak =
+                stats.currentStreak >= 2
 
-                    ? "HOT " +
+                    ? "🔥 " +
                       stats.currentStreak
 
                     : "-";
 
 
-            const bestStreak =
-                stats.bestStreak >
-                0
-
+            const best =
+                stats.bestStreak > 0
                     ? stats.bestStreak
-
                     : "-";
 
 
@@ -1532,11 +1449,11 @@ const sortedPlayers =
                 </td>
 
                 <td>
-                    ${currentStreak}
+                    ${streak}
                 </td>
 
                 <td>
-                    ${bestStreak}
+                    ${best}
                 </td>
 
             `;
@@ -1550,12 +1467,43 @@ const sortedPlayers =
 
 
 // ====================================
-// BUILD ROUND SELECTOR
+// STANDINGS SORT
 // ====================================
 
-function buildRoundSelector(
-    data
-) {
+function setupStandingsSort() {
+
+    const selector =
+        document.getElementById(
+            "standings-sort"
+        );
+
+
+    if (!selector) {
+        return;
+    }
+
+
+    selector.addEventListener(
+        "change",
+        async function() {
+
+            const data =
+                await loadAllResults();
+
+            updateStandings(
+                data
+            );
+
+        }
+    );
+}
+
+
+// ====================================
+// ROUND HISTORY
+// ====================================
+
+function setupHistorySelector() {
 
     const selector =
         document.getElementById(
@@ -1568,107 +1516,39 @@ function buildRoundSelector(
     }
 
 
-    const rounds =
-        [
-            ...new Set(
-                data.map(
-                    function(bet) {
-
-                        return Number(
-                            bet.round
-                        );
-
-                    }
-                )
-            )
-        ];
-
-
-    // Always include current round
-
-    if (
-        !rounds.includes(
-            currentRound
-        )
-    ) {
-
-        rounds.push(
-            currentRound
-        );
-    }
-
-
-    rounds.sort(
-        function(a, b) {
-
-            return b - a;
-
-        }
+    populateRoundSelector(
+        selector,
+        currentRound
     );
 
 
-    selector.innerHTML = "";
+    selector.addEventListener(
+        "change",
+        async function() {
+
+            const data =
+                await loadAllResults();
 
 
-    rounds.forEach(
-        function(round) {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-
-            option.value =
-                round;
-
-
-            option.textContent =
-                "Round " +
-                round;
-
-
-            selector.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    // Default to current round
-
-    selector.value =
-        currentRound;
-
-
-    selector.onchange =
-        function() {
-
-            displaySelectedRound(
+            displayRoundHistory(
                 data,
                 Number(
                     this.value
                 )
             );
 
-        };
-
-
-    displaySelectedRound(
-        data,
-        currentRound
+        }
     );
 }
 
 
 // ====================================
-// DISPLAY SELECTED ROUND
+// DISPLAY ROUND HISTORY
 // ====================================
 
-function displaySelectedRound(
+function displayRoundHistory(
     data,
-    selectedRound
+    round
 ) {
 
     const container =
@@ -1693,8 +1573,7 @@ function displaySelectedRound(
                     return (
                         Number(
                             bet.round
-                        ) ===
-                        selectedRound
+                        ) === round
                     );
 
                 }
@@ -1711,153 +1590,8 @@ function displaySelectedRound(
             );
 
 
-    const completed =
-        bets.filter(
-            function(bet) {
-
-                const result =
-                    (
-                        bet.result ||
-                        ""
-                    )
-                    .toString()
-                    .trim()
-                    .toUpperCase();
-
-
-                return (
-                    result === "W" ||
-                    result === "L"
-                );
-
-            }
-        ).length;
-
-
-    const wins =
-        bets.filter(
-            function(bet) {
-
-                const result =
-                    (
-                        bet.result ||
-                        ""
-                    )
-                    .toString()
-                    .trim()
-                    .toUpperCase();
-
-
-                return result === "W";
-
-            }
-        ).length;
-
-
-    const totalWinnings =
-        bets.reduce(
-            function(total, bet) {
-
-                return (
-                    total +
-                    (
-                        Number(
-                            bet.winnings
-                        ) || 0
-                    )
-                );
-
-            },
-            0
-        );
-
-
-    // Calculate kitty immediately
-    // before this round
-
-    let kitty =
-        STARTING_KITTY;
-
-
-    data
-        .filter(
-            function(bet) {
-
-                return (
-                    Number(
-                        bet.round
-                    ) <
-                    selectedRound
-                );
-
-            }
-        )
-        .sort(
-            function(a, b) {
-
-                if (
-                    Number(a.round) !==
-                    Number(b.round)
-                ) {
-
-                    return (
-                        Number(a.round) -
-                        Number(b.round)
-                    );
-
-                }
-
-
-                return (
-                    Number(a.week) -
-                    Number(b.week)
-                );
-
-            }
-        )
-        .forEach(
-            function(bet) {
-
-                const result =
-                    (
-                        bet.result ||
-                        ""
-                    )
-                    .toString()
-                    .trim()
-                    .toUpperCase();
-
-
-                if (
-                    result === "W" ||
-                    result === "L"
-                ) {
-
-                    kitty +=
-                        UNBET_AMOUNT -
-                        STAKE +
-                        (
-                            Number(
-                                bet.winnings
-                            ) || 0
-                        );
-
-                }
-
-            }
-        );
-
-
-    const startingKitty =
-        kitty;
-
-
-    // ====================================
-    // ROUND TABLE
-    // ====================================
-
-    let tableRows =
-        "";
+    let wins = 0;
+    let totalWinnings = 0;
 
 
     bets.forEach(
@@ -1868,124 +1602,173 @@ function displaySelectedRound(
                     bet.result ||
                     ""
                 )
-                .toString()
-                .trim()
-                .toUpperCase();
-
-
-            let resultDisplay =
-                "-";
+                    .toString()
+                    .trim()
+                    .toUpperCase();
 
 
             if (
                 result === "W"
             ) {
 
-                resultDisplay =
-                    "<strong>W</strong>";
-
+                wins++;
             }
 
 
-            if (
-                result === "L"
-            ) {
-
-                resultDisplay =
-                    "<strong>L</strong>";
-
-            }
-
-
-            const winnings =
+            totalWinnings +=
                 Number(
                     bet.winnings
                 ) || 0;
 
-
-            const odds =
-                bet.odds !== null &&
-                bet.odds !== undefined
-
-                    ? Number(
-                        bet.odds
-                    ).toFixed(2)
-
-                    : "-";
+        }
+    );
 
 
-            const date =
-                bet.friday
-
-                    ? new Date(
-                        bet.friday +
-                        "T00:00:00"
-                    )
-
-                    : null;
+    let htmlRows = "";
 
 
-            const dateText =
-                date
-                    ? formatDate(date)
-                    : "-";
+    for (
+        let week = 1;
+        week <= WEEKS_PER_ROUND;
+        week++
+    ) {
+
+        const bet =
+            bets.find(
+                function(item) {
+
+                    return (
+                        Number(
+                            item.week
+                        ) === week
+                    );
+
+                }
+            );
 
 
-            if (
-                result === "W" ||
-                result === "L"
-            ) {
+        const date =
+            getWeekDate(
+                round,
+                week
+            );
 
-                kitty +=
-                    UNBET_AMOUNT -
-                    STAKE +
-                    winnings;
 
+        const punter =
+            getPunter(
+                round,
+                week
+            );
+
+
+        let result = "-";
+        let odds = "-";
+        let winnings = 0;
+
+
+        if (bet) {
+
+            result =
+                (
+                    bet.result ||
+                    "-"
+                )
+                    .toString()
+                    .trim()
+                    .toUpperCase();
+
+
+            if (result === "WIN") {
+                result = "W";
             }
 
 
-            tableRows += `
+            if (
+                result === "LOSS" ||
+                result === "LOSE"
+            ) {
+                result = "L";
+            }
 
-                <tr>
 
-                    <td>
-                        ${bet.week}
-                    </td>
+            if (
+                bet.odds !== null &&
+                bet.odds !== undefined
+            ) {
 
-                    <td>
-                        ${dateText}
-                    </td>
+                odds =
+                    Number(
+                        bet.odds
+                    ).toFixed(2);
+            }
 
-                    <td>
-                        ${bet.punter}
-                    </td>
 
-                    <td>
-                        $${STAKE}
-                    </td>
-
-                    <td>
-                        ${odds}
-                    </td>
-
-                    <td>
-                        ${resultDisplay}
-                    </td>
-
-                    <td>
-                        $${winnings.toFixed(2)}
-                    </td>
-
-                    <td>
-                        $${kitty.toFixed(0)}
-                    </td>
-
-                </tr>
-
-            `;
-
+            winnings =
+                Number(
+                    bet.winnings
+                ) || 0;
         }
-    );
+
+
+        htmlRows += `
+
+            <tr>
+
+                <td>
+                    ${week}
+                </td>
+
+                <td>
+                    ${formatDate(date)}
+                </td>
+
+                <td>
+                    ${punter}
+                </td>
+
+                <td>
+                    $${STAKE}
+                </td>
+
+                <td>
+                    ${odds}
+                </td>
+
+                <td>
+                    ${result}
+                </td>
+
+                <td>
+                    $${winnings.toFixed(2)}
+                </td>
+
+            </tr>
+
+        `;
+    }
+
+
+    const completed =
+        bets.filter(
+            function(bet) {
+
+                const result =
+                    (
+                        bet.result ||
+                        ""
+                    )
+                        .toString()
+                        .trim()
+                        .toUpperCase();
+
+
+                return (
+                    result === "W" ||
+                    result === "L"
+                );
+
+            }
+        ).length;
 
 
     const section =
@@ -2001,7 +1784,7 @@ function displaySelectedRound(
     section.innerHTML = `
 
         <h3>
-            Round ${selectedRound}
+            Round ${round}
             ${
                 completed ===
                 WEEKS_PER_ROUND
@@ -2020,7 +1803,9 @@ function displaySelectedRound(
 
             ${completed} / ${WEEKS_PER_ROUND}
 
-            &nbsp;&nbsp;
+        </p>
+
+        <p>
 
             <strong>
                 Wins:
@@ -2038,68 +1823,34 @@ function displaySelectedRound(
 
         </p>
 
-        <p>
 
-            <strong>
-                Starting Kitty:
-            </strong>
+        <div class="table-container">
 
-            $${startingKitty.toFixed(0)}
+            <table>
 
-        </p>
+                <thead>
 
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>Week</th>
-
-                    <th>Date</th>
-
-                    <th>Punter</th>
-
-                    <th>Stake</th>
-
-                    <th>Odds</th>
-
-                    <th>Result</th>
-
-                    <th>Winnings</th>
-
-                    <th>Kitty After</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                ${
-                    tableRows ||
-                    `
                     <tr>
-                        <td colspan="8">
-                            No bets recorded yet.
-                        </td>
+                        <th>Week</th>
+                        <th>Date</th>
+                        <th>Punter</th>
+                        <th>Stake</th>
+                        <th>Odds</th>
+                        <th>Result</th>
+                        <th>Winnings</th>
                     </tr>
-                    `
-                }
 
-            </tbody>
+                </thead>
 
-        </table>
+                <tbody>
 
-        <p>
+                    ${htmlRows}
 
-            <strong>
-                Ending Kitty:
-            </strong>
+                </tbody>
 
-            $${kitty.toFixed(0)}
+            </table>
 
-        </p>
+        </div>
 
     `;
 
@@ -2111,7 +1862,7 @@ function displaySelectedRound(
 
 
 // ====================================
-// UPDATE THIS WEEK'S BET
+// CURRENT BET CARD
 // ====================================
 
 function updateCurrentBetCard(
@@ -2138,47 +1889,45 @@ function updateCurrentBetCard(
         );
 
 
-    const playerElement =
+    const player =
         document.getElementById(
             "current-bet-player"
         );
 
 
-    const oddsElement =
+    const odds =
         document.getElementById(
             "current-bet-odds"
         );
 
 
-    const resultElement =
+    const result =
         document.getElementById(
             "current-bet-result"
         );
 
 
-    const winningsElement =
+    const winnings =
         document.getElementById(
             "current-bet-winnings"
         );
 
 
-    if (
-        playerElement
-    ) {
+    if (player) {
 
-        playerElement.textContent =
+        player.textContent =
             currentBet
                 ? currentBet.punter
-                : currentPlayer;
-
+                : getPunter(
+                    currentRound,
+                    currentWeek
+                );
     }
 
 
-    if (
-        oddsElement
-    ) {
+    if (odds) {
 
-        oddsElement.textContent =
+        odds.textContent =
             currentBet &&
             currentBet.odds !== null &&
             currentBet.odds !== undefined
@@ -2188,56 +1937,48 @@ function updateCurrentBetCard(
                 ).toFixed(2)
 
                 : "-";
-
     }
 
 
-    if (
-        resultElement
-    ) {
+    if (result) {
 
-        let result =
+        let value =
             currentBet
                 ? currentBet.result
                 : "";
 
 
-        result =
+        value =
             (
-                result ||
+                value ||
                 ""
             )
-            .toString()
-            .trim()
-            .toUpperCase();
+                .toString()
+                .trim()
+                .toUpperCase();
 
 
-        if (
-            result === "WIN"
-        ) {
-            result = "W";
+        if (value === "WIN") {
+            value = "W";
         }
 
 
         if (
-            result === "LOSS" ||
-            result === "LOSE"
+            value === "LOSS" ||
+            value === "LOSE"
         ) {
-            result = "L";
+            value = "L";
         }
 
 
-        resultElement.textContent =
-            result || "-";
-
+        result.textContent =
+            value || "-";
     }
 
 
-    if (
-        winningsElement
-    ) {
+    if (winnings) {
 
-        winningsElement.textContent =
+        winnings.textContent =
             currentBet
                 ? (
                     Number(
@@ -2246,7 +1987,6 @@ function updateCurrentBetCard(
                 ).toFixed(2)
 
                 : "0.00";
-
     }
 }
 
@@ -2255,13 +1995,13 @@ function updateCurrentBetCard(
 // REFRESH EVERYTHING
 // ====================================
 
-async function refreshAllDisplays() {
+async function refreshAll() {
 
     const data =
         await loadAllResults();
 
 
-    updateKittyDisplay(
+    updateKitty(
         data
     );
 
@@ -2271,14 +2011,26 @@ async function refreshAllDisplays() {
     );
 
 
-    buildRoundSelector(
-        data
-    );
-
-
     updateCurrentBetCard(
         data
     );
+
+
+    const historySelector =
+        document.getElementById(
+            "round-selector"
+        );
+
+
+    if (historySelector) {
+
+        displayRoundHistory(
+            data,
+            Number(
+                historySelector.value
+            )
+        );
+    }
 }
 
 
@@ -2288,8 +2040,14 @@ async function refreshAllDisplays() {
 
 displayCurrentRound();
 
-buildSchedule();
+setupStandingsSort();
 
-buildBettingTable();
+setupBookieSelector();
 
-loadCurrentRound();
+setupHistorySelector();
+
+buildBookieTable(
+    selectedBookieRound
+);
+
+refreshAll();
