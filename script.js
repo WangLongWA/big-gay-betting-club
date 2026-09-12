@@ -583,6 +583,30 @@ function updateDisplayedWinnings(
     }
 }
 
+// ====================================
+// STANDINGS SORT SELECTOR
+// ====================================
+
+const standingsSort =
+    document.getElementById(
+        "standings-sort"
+    );
+
+if (standingsSort) {
+
+    standingsSort.addEventListener(
+        "change",
+        async function() {
+
+            const data =
+                await loadAllResults();
+
+            updateStandings(data);
+
+        }
+    );
+
+}
 
 // ====================================
 // LOAD CURRENT ROUND
@@ -1380,48 +1404,66 @@ function updateStandings(
     // 3. Original player order
     // ====================================
 
-    const sortedPlayers =
-        [...players].sort(
-            function(a, b) {
+// ====================================
+// SORT STANDINGS
+// ====================================
 
-                if (
-                    standings[b].wins !==
-                    standings[a].wins
-                ) {
+const sortSelector =
+    document.getElementById("standings-sort");
 
-                    return (
-                        standings[b].wins -
-                        standings[a].wins
-                    );
-
-                }
+const sortBy =
+    sortSelector
+        ? sortSelector.value
+        : "wins";
 
 
-                if (
-                    standings[b]
-                        .totalWinnings !==
-                    standings[a]
-                        .totalWinnings
-                ) {
+const sortedPlayers =
+    [...players].sort(function(a, b) {
 
-                    return (
-                        standings[b]
-                            .totalWinnings -
-                        standings[a]
-                            .totalWinnings
-                    );
+        if (sortBy === "winnings") {
 
-                }
-
+            if (
+                standings[b].totalWinnings !==
+                standings[a].totalWinnings
+            ) {
 
                 return (
-                    players.indexOf(a) -
-                    players.indexOf(b)
+                    standings[b].totalWinnings -
+                    standings[a].totalWinnings
                 );
 
             }
+
+            // Tie breaker = most wins
+
+            return (
+                standings[b].wins -
+                standings[a].wins
+            );
+        }
+
+
+        // Default = most wins
+
+        if (
+            standings[b].wins !==
+            standings[a].wins
+        ) {
+
+            return (
+                standings[b].wins -
+                standings[a].wins
+            );
+        }
+
+        // Tie breaker = most winnings
+
+        return (
+            standings[b].totalWinnings -
+            standings[a].totalWinnings
         );
 
+    });
 
     // ====================================
     // DISPLAY
